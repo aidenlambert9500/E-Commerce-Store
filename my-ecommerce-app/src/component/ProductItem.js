@@ -1,26 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { useState } from "react";
 
+function ProductItem(props) {
+  const [showDescription, setShowDescription] = useState(false);
+  const [productHoverID, setProductHover] = useState(0);
 
-function ProductItem({ product, props }) {
-  const [hovering, setHovering] = useState(false);
-  
-  return (
-    <div className="product-item">
-      <img
-        src={process.env.PUBLIC_URL + product.image}
-        alt={product.name}
-        height="250px"
-      />
-      <p
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => setHovering(false)}>
-        {product.name}
-      </p>
-        {hovering && <p>{product.description}</p>}
-      <p>Price: ${product.price}</p>
-      <button type="button" onClick={()=>props.handleCartAdd(product)}>Add to Cart</button>
-    </div>
-  );
+  return props.products.map(function (product) {
+    return (
+      <div className="product-item" id={product.id}>
+        <div className="product-image">
+          <img
+            style={{ height: "300px" }}
+            src={product.image}
+            alt={product.name}
+          />
+        </div>
+        <div
+          className="product-name"
+          onMouseEnter={() => {
+            setShowDescription(true);
+            setProductHover(product.id);
+          }}
+          onMouseLeave={() => setShowDescription(false)}
+        >
+          {product.name}
+        </div>
+        <div className="product-price">Price: ${product.price}</div>
+        <button type="button" onClick={() => props.handleCartAdd(product)}>
+          Add to Cart
+        </button>
+        {showDescription && productHoverID === product.id && (
+          <div>{product.description}</div>
+        )}
+      </div>
+    );
+  });
 }
-
 export default ProductItem;
