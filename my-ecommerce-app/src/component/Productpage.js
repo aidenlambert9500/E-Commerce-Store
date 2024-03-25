@@ -4,81 +4,88 @@ import Footer from "./Footer.js";
 import ProductList from "./ProductList";
 import Cart from "./Cart";
 
-export const CartItemsContext = createContext(null);
+export const BasketContext = createContext(null);
 
-function Productpage() {
-  const [cartItems, setCartItems] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0);
+function ShopPage() {
+  const [basketItems, setBasketItems] = useState([]);
+  const [totalCost, setTotalCost] = useState(0);
 
   useEffect(() => {
-    const itemsInLocal = JSON.parse(localStorage.getItem("cartItems") || "[]");
-    setCartItems(itemsInLocal);
+    const storedItems = JSON.parse(localStorage.getItem("basketItems") || "[]");
+    setBasketItems(storedItems);
 
-    let calculatedTotalPrice = 0;
-    for (let i = 0; i < itemsInLocal.length; i++) {
-      calculatedTotalPrice += itemsInLocal[i].total;
+    let computedTotal = 0;
+    for (let item of storedItems) {
+      computedTotal += item.total;
     }
-    setTotalPrice(calculatedTotalPrice);
+    setTotalCost(computedTotal);
   }, []);
 
-  const handleCartAdd = (childData) => {
-    let inCart = false;
-    for (let i = 0; i < cartItems.length; i++) {
-      if (childData.id === cartItems[i].id) {
-        cartItems[i].quantity += 1;
-        cartItems[i].total += childData.price;
-        setTotalPrice(totalPrice + childData.price);
-        inCart = true;
+  const addToBasket = (product) => {
+    let foundInBasket = false;
+    const updatedBasket = basketItems.map((item) => {
+      if (item.id === product.id) {
+        item.quantity += 1;
+        item.total += product.price;
+        foundInBasket = true;
       }
+      return item;
+    });
+
+    if (!foundInBasket) {
+      const newItem = {
+        ...product,
+        quantity: 1,
+        total: product.price,
+      };
+      updatedBasket.push(newItem);
     }
-    if (cartItems.length === 0 || inCart === false) {
-      childData.quantity = 1;
-      childData.total = childData.price;
-      cartItems.push(childData);
-      setTotalPrice(totalPrice + childData.price);
-    }
-    setCartItems(cartItems);
-    const string = JSON.stringify(cartItems);
-    localStorage.setItem("cartItems", string);
-    localStorage.setItem("totalPrice", totalPrice);
+
+    setBasketItems(updatedBasket);
+    setTotalCost(prevCost => prevCost + product.price);
+    localStorage.setItem("basketItems", JSON.stringify(updatedBasket));
+    localStorage.setItem("basketTotalCost", JSON.stringify(totalCost));
   };
 
-  const handleCartRemove = (childData) => {
-    for (let i = 0; i < cartItems.length; i++) {
-      if (childData.id === cartItems[i].id) {
-        cartItems[i].quantity -= 1;
-        cartItems[i].total -= cartItems[i].price;
-        setTotalPrice(totalPrice - cartItems[i].price);
-        if (cartItems[i].quantity === 0) {
-          cartItems.splice(i, 1);
-        }
-        break;
+  const removeFromBasket = (product) => {
+    const updatedBasket = basketItems.reduce((acc, item) => {
+      if (item.id === product.id) {
+        item.quantity -= 1;
+        item.total -= product.price;
+        if (item.quantity > 0) acc.push(item);
+      } else {
+        acc.push(item);
       }
-    }
-    setCartItems(cartItems);
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+      return acc;
+    }, []);
+
+    setBasketItems(updatedBasket);
+    setTotalCost(prevCost => prevCost - product.price);
+    localStorage.setItem("basketItems", JSON.stringify(updatedBasket));
   };
 
   return (
-    <div className="product-page">
+    <div className="shop-page">
       <Header />
       <table style={{ width: "100%" }}>
-        <tr>
-          <td style={{ verticalAlign: "top" }}>
-            <ProductList handleCartAdd={handleCartAdd} />
-          </td>
-          <td style={{ verticalAlign: "top" }}>
-            <Cart
-              handleCartRemove={handleCartRemove}
-              totalPrice={totalPrice}
-              cartItems={cartItems}
-            />
-          </td>
-        </tr>
+        <tbody>
+          <tr>
+            <td style={{ verticalAlign: "top" }}>
+              <ProductList addToBasket={addToBasket} />
+            </td>
+            <td style={{ verticalAlign: "top" }}>
+              <Cart
+                removeFromBasket={removeFromBasket}
+                totalCost={totalCost}
+                basketItems={basketItems}
+              />
+            </td>
+          </tr>
+        </tbody>
       </table>
       <Footer />
     </div>
   );
 }
 
-export default Productpage;
+export default ShopPage;
