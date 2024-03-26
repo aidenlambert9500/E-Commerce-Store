@@ -2,82 +2,70 @@ import React, { createContext, useState, useEffect } from "react";
 import Header from "./Header.js";
 import Footer from "./Footer.js";
 import ProductList from "./ProductList";
-import Cart from "./Cart";
+import CartView from "./Cart";
 
-export const BasketContext = createContext(null);
+export const CartContext = createContext(null);
 
-function ShopPage() {
-  const [basketItems, setBasketItems] = useState([]);
-  const [totalCost, setTotalCost] = useState(0);
+function Productpage() {
+  const [cartProducts, setCartProducts] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
 
   useEffect(() => {
-    const storedItems = JSON.parse(localStorage.getItem("basketItems") || "[]");
-    setBasketItems(storedItems);
+    const storedCartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+    setCartProducts(storedCartItems);
 
-    let computedTotal = 0;
-    for (let item of storedItems) {
-      computedTotal += item.total;
-    }
-    setTotalCost(computedTotal);
+    const total = storedCartItems.reduce((acc, currentItem) => acc + currentItem.total, 0);
+    setCartTotal(total);
   }, []);
 
-  const addToBasket = (product) => {
-    let foundInBasket = false;
-    const updatedBasket = basketItems.map((item) => {
-      if (item.id === product.id) {
-        item.quantity += 1;
-        item.total += product.price;
-        foundInBasket = true;
-      }
-      return item;
-    });
+  const addToCart = (product) => {
+    const updatedCartItems = cartProducts.map(item => ({ ...item }));
+    const existingProductIndex = updatedCartItems.findIndex(item => item.id === product.id);
 
-    if (!foundInBasket) {
-      const newItem = {
-        ...product,
-        quantity: 1,
-        total: product.price,
-      };
-      updatedBasket.push(newItem);
+    if (existingProductIndex >= 0) {
+      updatedCartItems[existingProductIndex].quantity += 1;
+      updatedCartItems[existingProductIndex].total += product.price;
+    } else {
+      updatedCartItems.push({ ...product, quantity: 1, total: product.price });
     }
 
-    setBasketItems(updatedBasket);
-    setTotalCost(prevCost => prevCost + product.price);
-    localStorage.setItem("basketItems", JSON.stringify(updatedBasket));
-    localStorage.setItem("basketTotalCost", JSON.stringify(totalCost));
+    setCartProducts(updatedCartItems);
+    setCartTotal(prevTotal => prevTotal + product.price);
+
+    localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+    localStorage.setItem("totalPrice", cartTotal + product.price);
   };
 
-  const removeFromBasket = (product) => {
-    const updatedBasket = basketItems.reduce((acc, item) => {
+  const removeFromCart = (product) => {
+    let newCartTotal = cartTotal;
+    const updatedCartItems = cartProducts.filter(item => {
       if (item.id === product.id) {
-        item.quantity -= 1;
-        item.total -= product.price;
-        if (item.quantity > 0) acc.push(item);
-      } else {
-        acc.push(item);
+        newCartTotal -= item.price * item.quantity;
+        return false;
       }
-      return acc;
-    }, []);
+      return true;
+    });
 
-    setBasketItems(updatedBasket);
-    setTotalCost(prevCost => prevCost - product.price);
-    localStorage.setItem("basketItems", JSON.stringify(updatedBasket));
+    setCartProducts(updatedCartItems);
+    setCartTotal(newCartTotal);
+
+    localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
   };
 
   return (
-    <div className="shop-page">
+    <div className="product-page">
       <Header />
       <table style={{ width: "100%" }}>
         <tbody>
           <tr>
             <td style={{ verticalAlign: "top" }}>
-              <ProductList addToBasket={addToBasket} />
+              <ProductList handleCartAdd={addToCart} />
             </td>
             <td style={{ verticalAlign: "top" }}>
-              <Cart
-                removeFromBasket={removeFromBasket}
-                totalCost={totalCost}
-                basketItems={basketItems}
+              <CartView
+                handleCartRemove={removeFromCart}
+                totalPrice={cartTotal}
+                cartItems={cartProducts}
               />
             </td>
           </tr>
@@ -88,4 +76,5 @@ function ShopPage() {
   );
 }
 
-export default ShopPage;
+export default Productpage;
+
