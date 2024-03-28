@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function LoginForm() {
     const [signup, setSignup] = useState(false); // variable to toggle between login and signup form
@@ -7,8 +8,32 @@ function LoginForm() {
     const [password, setPassword] = useState(''); // variable to store password
     const [confirmPassword, setConfirmPassword] = useState(''); // variable to store confirm password
     const [email, setEmail] = useState(''); //  variable to store email
+    const [message, setMessage] = useState(''); // ! may be redundant
 
-    const handleAuthentication = (e) => {return} // todo implement this function
+    const [loggedIn, setLoggedIn] = useState(false);
+
+   function handleAuthentication(){
+    fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({'username': username, 'password': password}),
+   })
+   .then(response => response.json())
+   .then(response =>{
+
+        if (response.authenticated){
+            setLoggedIn(true);
+            setMessage("Authentication successful!");
+        } else {
+            setLoggedIn(false)
+            setMessage("Authentication failed. Incorrect username or password.");
+        }
+   }) // todo implement this function
+   .catch(error => setMessage("Authentication failed. Incorrect username or password."));
+} 
+    
     const handleSignup = (e) => {return} // todo implement this function
 
     return(
@@ -23,6 +48,8 @@ function LoginForm() {
                         <input type="password" placeholder="Enter your password" required onChange={(e) =>setPassword(e.target.value)}/><br/>
                         <button type="submit" onClick={handleAuthentication}>Login</button>
                         <button onClick={() => setSignup(!signup)}className="signup">Switch to Signup</button>
+                        <br/>
+                        <p>{message}</p>
                     </form>)}
             <div/>
             <div className='signup-form'>
