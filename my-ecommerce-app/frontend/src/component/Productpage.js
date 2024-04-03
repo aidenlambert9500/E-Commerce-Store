@@ -3,14 +3,19 @@ import Header from "./Header.js";
 import Footer from "./Footer.js";
 import ProductList from "./ProductList";
 import CartView from "./Cart";
+import {useHistory} from 'react-router-dom';
+
 
 export const CartContext = createContext(null);
 
 function Productpage() {
+
   const [cartProducts, setCartProducts] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
 
   useEffect(() => {
+    const loggedInUser  = localStorage.getItem("user");
+    
     const storedCartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
     setCartProducts(storedCartItems);
 

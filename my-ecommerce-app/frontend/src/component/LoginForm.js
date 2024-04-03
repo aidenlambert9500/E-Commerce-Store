@@ -1,5 +1,7 @@
-import React, {useState} from 'react';
+import React, {useState, createContext} from 'react';
 import { useNavigate } from 'react-router-dom';
+
+export const UserContext = createContext(null);
 
 function LoginForm() {
     const [signup, setSignup] = useState(false); // variable to toggle between login and signup form
@@ -8,35 +10,63 @@ function LoginForm() {
     const [password, setPassword] = useState(''); // variable to store password
     const [confirmPassword, setConfirmPassword] = useState(''); // variable to store confirm password
     const [email, setEmail] = useState(''); //  variable to store email
-    const [message, setMessage] = useState(''); // ! may be redundant
+    const [message, setMessage] = useState(''); // variable to store message
 
     const [loggedIn, setLoggedIn] = useState(false);
 
-   function handleAuthentication(){
-    fetch('http://localhost:3000/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({'username': username, 'password': password}),
-   })
-   .then(response => response.json())
-   .then(response =>{
-
-        if (response.authenticated){
-            setLoggedIn(true);
-            setMessage("Authentication successful!");
-        } else {
-            setLoggedIn(false)
-            setMessage("Authentication failed. Incorrect username or password.");
-        }
-   }) // todo implement this function
-   .catch(error => setMessage("Authentication failed. Incorrect username or password."));
-} 
+    const navigate = useNavigate();
     
-    const handleSignup = (e) => {return} // todo implement this function
+    function handleAuthentication(event){
+        event.preventDefault(); // * THIS LINE IS IMPORTANT
+        console.log(username, password);
+        fetch('http://localhost:5000/Login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({'username': username, 'password': password}),
+    })
+    .then(response => response.json())
+    .then(response =>{
 
+            if (response.loggedIn){
+                setLoggedIn(true);
+                setMessage("Authentication successful!");
+                navigate('/Productpage')
+            } else {
+                setLoggedIn(false)
+                setMessage("Authentication failed. Incorrect username or password.");
+            }
+    }) // todo implement this function
+    .catch(error => setMessage("Authentication failed. Incorrect username or password."));
+    
+};
+    
+    function handleSignup(event) {
+        event.preventDefault();
+        console.log(username, password, confirmPassword, email);
+        if (password !== confirmPassword){
+            setMessage("Passwords do not match");
+            return;
+        } else {
+            fetch('http://localhost:5000/Signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({'username': username, 'password': password, 'email': email}),
+        })
+        .then(response => response.json())
+        .then(response => {
+        if (response.success){
+            setMessage("Signup successful!");
+            setSignup(false);
+        }},
+        error => setMessage("Signup failed. Username already exists.")) 
+    } 
+}
     return(
+        <UserContext.Provider value={{loggedIn, setLoggedIn}}>
         <div>
             <h2>Login</h2>
             <div className="login-form"></div>
@@ -48,8 +78,8 @@ function LoginForm() {
                         <input type="password" placeholder="Enter your password" required onChange={(e) =>setPassword(e.target.value)}/><br/>
                         <button type="submit" onClick={handleAuthentication}>Login</button>
                         <button onClick={() => setSignup(!signup)}className="signup">Switch to Signup</button>
-                        <br/>
-                        <p>{message}</p>
+                        <br/>  
+                        {message && <p>{message}</p>}
                     </form>)}
             <div/>
             <div className='signup-form'>
@@ -69,6 +99,7 @@ function LoginForm() {
                 </form>)}
         </div>
     </div>
+    </UserContext.Provider>
     )
 }
 export default LoginForm;
