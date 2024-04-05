@@ -1,27 +1,32 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import Header from "./Header.js";
 import Footer from "./Footer.js";
 import ProductList from "./ProductList";
 import CartView from "./Cart";
-import {useHistory} from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from "./UserContext";
 
 export const CartContext = createContext(null);
 
-function Productpage() {
 
+function Productpage() {
+  const { loggedIn } = useContext(UserContext);
+  const navigate = useNavigate();
   const [cartProducts, setCartProducts] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
-
+  
   useEffect(() => {
-    const loggedInUser  = localStorage.getItem("user");
-    
+    if (!loggedIn){
+      navigate('/Login');
+      return;
+    }
     const storedCartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
     setCartProducts(storedCartItems);
 
     const total = storedCartItems.reduce((acc, currentItem) => acc + currentItem.total, 0);
     setCartTotal(total);
-  }, []);
+  }, [loggedIn, navigate]);
+
 
   const addToCart = (product) => {
     const updatedCartItems = cartProducts.map(item => ({ ...item }));

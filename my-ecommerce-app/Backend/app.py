@@ -6,9 +6,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-users = [    
-    {'id': 1, 'username': "aiden", 'password': "hi", 'email': "aiden@live.com"} 
-]
+with open("user.json") as f:
+    users = json.load(f)
+
 
 products = [
  {
@@ -108,13 +108,15 @@ def handleSignup():
             return jsonify({'success': False, 'message': 'Username already exists'})
     new_user = {'id': len(users)+1, 'username': entered_username, 'password': entered_password, 'email': entered_email}
     users.append(new_user)
+    # save the new user to the json file
+    with open('user.json', 'w') as f:
+        json.dump(users, f)
+    
     return jsonify({'success': True, 'message': 'Account created'})
 
 @app.route('/Productpage', methods=['GET'])
 def getProducts():
     return jsonify(products)
 
-
-    
 if __name__ == '__main__':
     app.run(debug=True)

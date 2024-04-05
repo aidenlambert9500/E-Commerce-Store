@@ -6,12 +6,12 @@ function ProductList(props) {
   const [products, setProducts] = useState([]);
   
   // gets the products from the backend
-  
+  useEffect(() => {
   fetch("http://localhost:5000/Productpage")
     .then((response) => response.json())
     .then((data) => {     
       setProducts(data);
-  });
+  })},[]);
 
   return (
     <div className="product-list">

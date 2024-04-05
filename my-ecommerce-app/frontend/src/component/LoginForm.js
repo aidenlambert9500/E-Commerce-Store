@@ -1,7 +1,5 @@
-import React, {useState, createContext} from 'react';
-import { useNavigate } from 'react-router-dom';
-
-export const UserContext = createContext(null);
+import React, {useContext, useState} from 'react';
+import { UserContext } from './UserContext';
 
 function LoginForm() {
     const [signup, setSignup] = useState(false); // variable to toggle between login and signup form
@@ -12,9 +10,9 @@ function LoginForm() {
     const [email, setEmail] = useState(''); //  variable to store email
     const [message, setMessage] = useState(''); // variable to store message
 
-    const [loggedIn, setLoggedIn] = useState(false);
+    const {setLoggedIn} = useContext(UserContext);
 
-    const navigate = useNavigate();
+    
     
     function handleAuthentication(event){
         event.preventDefault(); // * THIS LINE IS IMPORTANT
@@ -31,13 +29,14 @@ function LoginForm() {
 
             if (response.loggedIn){
                 setLoggedIn(true);
+                console.log("Logged In:" , response.loggedIn);
                 setMessage("Authentication successful!");
-                navigate('/Productpage')
             } else {
                 setLoggedIn(false)
+                console.log("Logged In:" , response.loggedIn);
                 setMessage("Authentication failed. Incorrect username or password.");
             }
-    }) // todo implement this function
+    }) 
     .catch(error => setMessage("Authentication failed. Incorrect username or password."));
     
 };
@@ -61,12 +60,14 @@ function LoginForm() {
         if (response.success){
             setMessage("Signup successful!");
             setSignup(false);
-        }},
-        error => setMessage("Signup failed. Username already exists.")) 
-    } 
-}
+        } else {
+            setMessage("Signup failed. Username already exists.");
+        }
+        
+    }).catch(error => setMessage("Signup failed. Incorrect username or password.")); 
+}}
     return(
-        <UserContext.Provider value={{loggedIn, setLoggedIn}}>
+        <UserContext.Provider value={{setLoggedIn}}>
         <div>
             <h2>Login</h2>
             <div className="login-form"></div>
@@ -95,11 +96,11 @@ function LoginForm() {
                     <input type="email" placeholder="Enter your email" required onChange={(e) =>setEmail(e.target.value)} /><br/>
                     <button type="submit" onClick={handleSignup}>Signup</button>
                     <button onClick={() => setSignup(!signup)} className="signup">Switch to Login</button>
-
+                    {message && <p>{message}</p>}
                 </form>)}
         </div>
     </div>
     </UserContext.Provider>
-    )
+    );
 }
 export default LoginForm;
