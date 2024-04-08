@@ -1,9 +1,10 @@
 import React, {useContext, useState} from 'react';
 import { UserContext } from './UserContext';
+import {useNavigate} from 'react-router-dom';
 
 function LoginForm() {
     const [signup, setSignup] = useState(false); // variable to toggle between login and signup form
-
+    const navigate = useNavigate(); // variable to navigate between pages
     const [username, setUsername] = useState(''); //  variable to store username
     const [password, setPassword] = useState(''); // variable to store password
     const [confirmPassword, setConfirmPassword] = useState(''); // variable to store confirm password
@@ -31,6 +32,7 @@ function LoginForm() {
                 setLoggedIn(true);
                 console.log("Logged In:" , response.loggedIn);
                 setMessage("Authentication successful!");
+                navigate('/Productpage');
             } else {
                 setLoggedIn(false)
                 console.log("Logged In:" , response.loggedIn);
