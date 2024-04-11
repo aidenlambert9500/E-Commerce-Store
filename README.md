@@ -8,7 +8,7 @@ This project is a simple full-stack e-commerce store implemented with React as a
 
 To install the project, follow these steps:
 
-1. Clone the repository: `git clone (https://github.com/aidenlambert9500/ENSF381Assignment04.git)`
+1. Clone the repository: `git clone (https://github.com/aidenlambert9500/E-commerce-Store.git)`
 2. Navigate to the project directory: `cd E-Commerce Store`
 3. Install the frontend dependencies in the 'frontend' folder: `npm install react` and `npm install react-dom`
 4. Install the backend dependencies in the 'backend' folder: `pip install Flask` and `pip install flask-cors`
