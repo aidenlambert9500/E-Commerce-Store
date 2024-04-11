@@ -16,3 +16,7 @@ To install the project, follow these steps:
 ## Usage
 
 To run the project, open two terminals and use `cd backend` for one and `cd frontend` for the other. Then simply run `python app.py` (`python3 app.py` for MacOS) in the backend terminal to run the backend server and `npm start` in the frontend terminal to start the React app. 
+
+## License
+
+This project is licensed under the terms of the [MIT license](LICENSE).
